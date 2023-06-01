@@ -1,25 +1,51 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import HighScoreTable from "./components/HighScoreTable.jsx";
+import allCountryScores from "./components/scores.js";
 
-function App() {
+const App = () => {
+  const [sortOrder, setSortOrder] = useState("asc");
+
+  const toggleSortOrder = () => {
+    setSortOrder((prevSortOrder) => (prevSortOrder === "asc" ? "desc" : "asc"));
+  };
+
+  const sortedAllScores = allCountryScores
+    .reduce((allScores, countryScore) => {
+      return allScores.concat(countryScore.scores);
+    }, [])
+    .sort((a, b) => {
+      const scoreA = Number(a.s);
+      const scoreB = Number(b.s);
+      return sortOrder === "asc" ? scoreB - scoreA : scoreA - scoreB;
+    });
+
+  const sortedCountryScores = allCountryScores.map((countryScore) => ({
+    ...countryScore,
+    scores: countryScore.scores.slice().sort((a, b) => {
+      const scoreA = Number(a.s);
+      const scoreB = Number(b.s);
+      return sortOrder === "asc" ? scoreB - scoreA : scoreA - scoreB;
+    }),
+  }));
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h1>High Score per Country</h1>
+      <button onClick={toggleSortOrder}> Sort Order</button>
+      <HighScoreTable
+        country="World"
+        scores={sortedAllScores}
+        sortOrder={sortOrder}
+      />
+      {sortedCountryScores.map((countryScore) => (
+        <HighScoreTable
+          key={countryScore.name}
+          country={countryScore.name}
+          scores={countryScore.scores}
+          sortOrder={sortOrder}
+        />
+      ))}
     </div>
   );
-}
-
+};
 export default App;
